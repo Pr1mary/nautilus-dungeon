@@ -1,0 +1,25 @@
+{
+  "name": "nautilus-dungeon",
+  "version": "0.0.1",
+  "description": "project nautilus dungeon",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pr1mary/nautilus-dungeon.git"
+  },
+  "keywords": [
+    "discord-bot",
+    "nautilus",
+    "bot",
+    "dungeon"
+  ],
+  "author": "Rafli",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Pr1mary/nautilus-dungeon/issues"
+  },
+  "homepage": "https://github.com/Pr1mary/nautilus-dungeon#readme"
+}
