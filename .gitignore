@@ -128,3 +128,9 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# project_conf
+.vscode
+
+# typescript compiled
+dist/
