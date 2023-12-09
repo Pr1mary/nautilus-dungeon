@@ -13,7 +13,7 @@ export class Bot{
     constructor(token: string){
         this.token = token || "";
 
-        const simpleMem = new SimpleMemoryHelper()
+        const simple_mem = new SimpleMemoryHelper()
         
         this.client = new Client({
             intents: [
@@ -22,11 +22,11 @@ export class Bot{
             ],
         });
         
-        const commandHandler = new CommandHandler();
+        const cmd_handler = new CommandHandler();
         
-        onInteraction(this.client, commandHandler, simpleMem);
+        onInteraction(this.client, cmd_handler, simple_mem);
         
-        onReady(this.client, commandHandler, this.token);
+        onReady(this.client, cmd_handler, this.token);
     }
     
     init(){
