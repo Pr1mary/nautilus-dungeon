@@ -4,6 +4,9 @@ import { iCommand } from "./commands/iCommand";
 import { Ping } from "./commands/utility/Ping";
 import { Server } from "./commands/utility/Server";
 import { Say } from "./commands/utility/Say";
+import { Create } from "./commands/utility/Create";
+import { Join } from "./commands/utility/Join";
+import { Start } from "./commands/utility/Start";
 
 export class CommandHandler {
 
@@ -11,7 +14,10 @@ export class CommandHandler {
     commands_set: RESTPostAPIApplicationCommandsJSONBody[] = [];
 
     constructor() {
-        const cmd_list: iCommand[] = [new Ping, new Server, new Say]
+        const cmd_list: iCommand[] = [
+            new Ping, new Server, new Say,
+            new Create, new Join, new Start,
+        ];
         this.commands = new Collection<String, iCommand>();
         for (const command of cmd_list) {
             this.commands.set(command.data.name, command);
