@@ -1,8 +1,8 @@
 
 import { SlashCommandBuilder, CommandInteraction } from "discord.js";
-import { iCommand } from "../iCommand";
+import { ICommand } from "../ICommand";
 
-export class Server implements iCommand {
+export class Server implements ICommand {
     data = new SlashCommandBuilder()
         .setName('server')
         .setDescription('Replies with Pong!');

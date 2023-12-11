@@ -1,24 +1,21 @@
 
 import { Collection, REST, Routes, RESTPostAPIApplicationCommandsJSONBody, Client } from "discord.js";
-import { iCommand } from "./commands/iCommand";
-import { Ping } from "./commands/utility/Ping";
-import { Server } from "./commands/utility/Server";
-import { Say } from "./commands/utility/Say";
-import { Create } from "./commands/utility/Create";
-import { Join } from "./commands/utility/Join";
-import { Start } from "./commands/utility/Start";
+import { ICommand } from "./ICommand";
+import { Server } from "./utility/Server";
+import { Create } from "./utility/Create";
+import { Join } from "./utility/Join";
+import { Start } from "./utility/Start";
 
 export class CommandHandler {
 
-    commands: Collection<String, iCommand>;
+    commands: Collection<String, ICommand>;
     commands_set: RESTPostAPIApplicationCommandsJSONBody[] = [];
 
     constructor() {
-        const cmd_list: iCommand[] = [
-            new Ping, new Server, new Say,
-            new Create, new Join, new Start,
+        const cmd_list: ICommand[] = [
+            new Server, new Create, new Join, new Start,
         ];
-        this.commands = new Collection<String, iCommand>();
+        this.commands = new Collection<String, ICommand>();
         for (const command of cmd_list) {
             this.commands.set(command.data.name, command);
             this.commands_set.push(command.data.toJSON());
