@@ -1,7 +1,6 @@
 
 import { SlashCommandBuilder, CommandInteraction } from "discord.js";
 import { ICommand } from "../ICommand";
-import { SimpleMemoryHelper } from "../../../helpers/SimpleMemoryHelper";
 import { PostgresHelper } from "../../../helpers/PostgresHelper";
 import env from "../../../helpers/Environment";
 import { SessionController } from "../../controller/SessionController";
@@ -42,7 +41,7 @@ export class Create implements ICommand {
         if(game_session.error){
             const err_cast: CommonMessage = game_session.error;
             content = (err_cast.message === "group id can not be empty")?
-            "To create new session, user should execute this command on a discord server":
+            "Command should be executed in a discord server":
             err_cast.message;
         }
 

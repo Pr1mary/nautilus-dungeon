@@ -1,41 +1,51 @@
 
 import { SlashCommandBuilder, CommandInteraction } from "discord.js";
 import { ICommand } from "../ICommand";
-import { SimpleMemoryHelper } from "../../../helpers/SimpleMemoryHelper";
-import { SessionModel } from "../../model/SessionModel";
+import { SessionController } from "../../controller/SessionController";
+import { PostgresHelper } from "../../../helpers/PostgresHelper";
+import env from "../../../helpers/Environment";
+import { CommonMessage } from "../../../helpers/WrapperHelper";
 
 export class Join implements ICommand {
-    data = new SlashCommandBuilder()
-        .setName('join')
-        .addStringOption(option => option.setName('session_code')
-            .setRequired(true)
-            .setDescription('Input session code'))
-        .setDescription('Join game session');
 
-    async execute(interaction: CommandInteraction, simple_mem: SimpleMemoryHelper){
+    data: SlashCommandBuilder;
+    pg_pool: PostgresHelper;
+
+    constructor() {
+        this.data = new SlashCommandBuilder();
+        this.data.setName('join')
+            .setDescription('Join game session')
+            .addStringOption(option => option.setName('session_code')
+                .setRequired(true)
+                .setDescription('Input session code'));
+        this.pg_pool = new PostgresHelper(
+            env.pg.host,
+            env.pg.user,
+            env.pg.pass,
+            env.pg.db,
+            env.pg.port);
+    }
+
+    async execute(interaction: CommandInteraction) {
         const session_code = interaction.options.get('session_code')?.value?.toString() || "";
+        const group_id = interaction.guildId || "";
         const user_id = interaction.user.id;
         const user_name = interaction.user.displayName;
-        const session_id = `${session_code}-${interaction.guildId}`;
-        const content = `Player ${user_name} joined the session`;
+        const channel_id = interaction.channelId;
 
-        const get_session = await simple_mem.get(session_id);
-        if(get_session.error !== null){
-            await interaction.reply({
-                content: "Session code not found!",
-            });
-            return;
+        await interaction.deferReply();
+
+        const session_controller = new SessionController(this.pg_pool);
+        const game_session = await session_controller.join(user_id, session_code, group_id, channel_id);
+        let content = `Player ${user_name} joined the session`;
+        if (game_session.error) {
+            const err_cast: CommonMessage = game_session.error;
+            content = (err_cast.message === "group id can not be empty") ?
+                "Command should be executed in a discord server" :
+                err_cast.message;
         }
-        const curr_session: SessionModel = get_session.data;
-        // const result = curr_session.join(user_id);
-        // if(result.error !== null){
-        //     await interaction.reply({
-        //         content: result.error["message"],
-        //     });
-        //     return;
-        // }
 
-        await interaction.reply({
+        await interaction.editReply({
             content
         });
     }

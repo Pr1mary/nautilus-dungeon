@@ -84,8 +84,14 @@ export class SessionController {
 
     async delete(user_id: string, group_id: string, channel_id: string){
 
+        const search_key = "session_id";
+
+        if (group_id === "" || group_id === null) {
+            return wrapper.error(new CommonMessage("group id can not be empty"));
+        }
+
         const qy_session = await this.pg_pool.query(`
-        SELECT session_id
+        SELECT ${search_key}
         FROM ${this.table_session}
         WHERE
         owner_id=$1 AND group_id=$2 AND channel_id=$3
@@ -100,13 +106,13 @@ export class SessionController {
 
         await this.pg_pool.beginTx();
         const cmd_member = await this.pg_pool.query(`
-        DELETE FROM ${this.member_session}
+        DELETE FROM ${this.table_member}
         WHERE session_id=$1
-        `, [qy_res.rows[0][0]]);
+        `, [qy_res.rows[0][search_key]]);
         const cmd_session = await this.pg_pool.query(`
-        DELETE FROM ${this.member_session}
+        DELETE FROM ${this.table_session}
         WHERE session_id=$1
-        `, [qy_res.rows[0][0]]);
+        `, [qy_res.rows[0][search_key]]);
         if (cmd_session.error || cmd_member.error) {
             await this.pg_pool.rollbackTx();
             return wrapper.error(new CommonMessage("Problem deleting session"));
@@ -115,6 +121,61 @@ export class SessionController {
 
         return wrapper.success();
 
+    }
+
+    async join(user_id: string, session_code: string, group_id: string, channel_id: string){
+        
+        const search_key = "session_id";
+
+        if (group_id === "" || group_id === null) {
+            return wrapper.error(new CommonMessage("group id can not be empty"));
+        }
+
+        const qy_session = await this.pg_pool.query(`
+        SELECT ${search_key}
+        FROM ${this.table_session}
+        WHERE
+        session_code=$1 AND group_id=$2 AND channel_id=$3
+        `, [session_code, group_id, channel_id]);
+        if (qy_session.error) {
+            return wrapper.error(new CommonMessage("Problem when searching session"));
+        }
+        const qy_res_session: ResultBuilder = qy_session.data;
+        if (qy_res_session.rows.length === 0) {
+            return wrapper.error(new CommonMessage("Session not found"));
+        }
+
+        const qy_member = await this.pg_pool.query(`
+        SELECT *
+        FROM ${this.table_member}
+        WHERE
+        session_id=$1 AND user_id=$2
+        `, [qy_res_session.rows[0][search_key], user_id]);
+        if (qy_member.error) {
+            return wrapper.error(new CommonMessage("Problem when searching member"));
+        }
+        const qy_res_member: ResultBuilder = qy_member.data;
+        if (qy_res_member.rows.length > 0) {
+            return wrapper.error(new CommonMessage("You already joined this session"));
+        }
+
+        this.member_session.member_id = new RandomHelper().uuidV4();
+        this.member_session.user_id = user_id;
+        this.member_session.session_id = qy_res_session.rows[0][search_key];
+        this.member_session.created_at = moment().format();
+
+        await this.pg_pool.beginTx();
+        const cmd_member = await this.pg_pool.query(`
+        INSERT INTO ${this.table_member}(member_id, user_id, session_id, created_at)
+        VALUES ($1, $2, $3, $4)
+        `, this.member_session.pgValues());
+        if (cmd_member.error) {
+            await this.pg_pool.rollbackTx();
+            return wrapper.error(new CommonMessage("Problem when joining session"));
+        }
+        await this.pg_pool.commitTx();
+
+        return wrapper.success(this.game_session.session_code);
     }
 
 }
