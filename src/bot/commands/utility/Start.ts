@@ -2,7 +2,7 @@
 import { SlashCommandBuilder, CommandInteraction } from "discord.js";
 import { ICommand } from "../ICommand";
 import { SimpleMemoryHelper } from "../../../helpers/SimpleMemoryHelper";
-import { SessionModel } from "../model/SessionModel";
+import { SessionModel } from "../../model/SessionModel";
 
 export class Start implements ICommand {
     data = new SlashCommandBuilder()
@@ -23,13 +23,13 @@ export class Start implements ICommand {
         }
 
         const curr_session: SessionModel = curr_memory.data;
-        const res_session = curr_session.start()
-        if(res_session.error !== null){
-            await interaction.reply({
-                content: "Session already started!"
-            });
-            return;
-        }
+        // const res_session = curr_session.start()
+        // if(res_session.error !== null){
+        //     await interaction.reply({
+        //         content: "Session already started!"
+        //     });
+        //     return;
+        // }
 
         await interaction.reply({
             content

@@ -7,14 +7,14 @@ import env from "../../../helpers/Environment";
 import { SessionController } from "../../controller/SessionController";
 import { CommonMessage } from "../../../helpers/WrapperHelper";
 
-export class Create implements ICommand {
+export class Stop implements ICommand {
 
     data: SlashCommandBuilder;
     pg_pool: PostgresHelper;
 
     constructor() {
         this.data = new SlashCommandBuilder();
-        this.data.setName('create')
+        this.data.setName('stop')
             .setDescription('Create new game session')
             .addStringOption(option => option.setName('game_code')
                 .setRequired(true)

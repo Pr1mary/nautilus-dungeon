@@ -2,7 +2,7 @@
 import { SlashCommandBuilder, CommandInteraction } from "discord.js";
 import { ICommand } from "../ICommand";
 import { SimpleMemoryHelper } from "../../../helpers/SimpleMemoryHelper";
-import { SessionModel } from "../model/SessionModel";
+import { SessionModel } from "../../model/SessionModel";
 
 export class Join implements ICommand {
     data = new SlashCommandBuilder()
@@ -27,13 +27,13 @@ export class Join implements ICommand {
             return;
         }
         const curr_session: SessionModel = get_session.data;
-        const result = curr_session.join(user_id);
-        if(result.error !== null){
-            await interaction.reply({
-                content: result.error["message"],
-            });
-            return;
-        }
+        // const result = curr_session.join(user_id);
+        // if(result.error !== null){
+        //     await interaction.reply({
+        //         content: result.error["message"],
+        //     });
+        //     return;
+        // }
 
         await interaction.reply({
             content

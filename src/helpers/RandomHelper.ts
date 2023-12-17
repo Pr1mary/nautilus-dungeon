@@ -1,5 +1,6 @@
 
-import crypto from "crypto";
+import crypto, { randomUUID } from "crypto";
+import uuid from "uuid";
 
 export class RandomHelper {
 
@@ -7,5 +8,9 @@ export class RandomHelper {
         return crypto.randomBytes(len).toString('hex');
     }
 
+    uuidV4(){
+        const uuidv4 = randomUUID().toString();
+        return uuidv4;
+    }
 
 }
