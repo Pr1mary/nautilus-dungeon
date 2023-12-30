@@ -21,6 +21,32 @@ export class SessionController {
         this.pg_pool = pg_pool;
     }
 
+    async search(user_id: string, group_id: string, channel_id: string) {
+
+        const search_key = "session_id, is_started, is_running, session_code";
+
+        if (group_id === "" || group_id === null) {
+            return wrapper.error(new CommonMessage("group id can not be empty"));
+        }
+
+        const qy_session = await this.pg_pool.query(`
+        SELECT ${search_key}
+        FROM ${this.table_session}
+        WHERE
+        owner_id=$1 AND group_id=$2 AND channel_id=$3
+        `, [user_id, group_id, channel_id]);
+        if (qy_session.error) {
+            return wrapper.error(new CommonMessage("Problem when searching session"));
+        }
+        const qy_res: ResultBuilder = qy_session.data;
+        if (qy_res.rows.length === 0) {
+            return wrapper.error(new CommonMessage("Session not yet created for this channel"));
+        }
+
+        return wrapper.success(qy_res.rows[0]);
+
+    }
+
     async create(user_id: string, game_code: string, group_id: string, channel_id: string) {
 
         if (group_id === "" || group_id === null) {
@@ -82,7 +108,7 @@ export class SessionController {
         return wrapper.success(this.game_session.session_code);
     }
 
-    async delete(user_id: string, group_id: string, channel_id: string){
+    async delete(user_id: string, group_id: string, channel_id: string) {
 
         const search_key = "session_id";
 
@@ -123,8 +149,8 @@ export class SessionController {
 
     }
 
-    async join(user_id: string, session_code: string, group_id: string, channel_id: string){
-        
+    async join(user_id: string, session_code: string, group_id: string, channel_id: string) {
+
         const search_key = "session_id";
 
         if (group_id === "" || group_id === null) {
@@ -176,6 +202,45 @@ export class SessionController {
         await this.pg_pool.commitTx();
 
         return wrapper.success(this.game_session.session_code);
+    }
+
+    async updateSession(user_id: string, group_id: string, channel_id: string,
+        is_started?: boolean, is_running?: boolean) {
+        
+        const qy_session = await this.pg_pool.query(`
+        SELECT session_id
+        FROM ${this.table_session}
+        WHERE
+        owner_id=$1 AND group_id=$2 AND channel_id=$3
+        `, [user_id, group_id, channel_id]);
+        if (qy_session.error) {
+            return wrapper.error(new CommonMessage("Problem when searching session"));
+        }
+        const qy_res: ResultBuilder = qy_session.data;
+        if (qy_res.rows.length === 0) {
+            return wrapper.error(new CommonMessage("Session not yet created in this channel"));
+        }
+
+        await this.pg_pool.beginTx();
+        const cmd_running_update = (is_running !== undefined)? await this.pg_pool.query(`
+        UPDATE GameSession
+        SET is_running=$1
+        WHERE session_id = $2
+        `, [is_running, qy_res.rows[0]["session_id"]]):
+        wrapper.success();
+        const cmd_start_update = (is_started !== undefined)? await this.pg_pool.query(`
+        UPDATE GameSession
+        SET is_started=$1
+        WHERE session_id = $2
+        `, [is_started, qy_res.rows[0]["session_id"]]):
+        wrapper.success();
+        if (cmd_running_update.error || cmd_start_update.error) {
+            await this.pg_pool.rollbackTx();
+            return wrapper.error(new CommonMessage("Problem when updating session"));
+        }
+        await this.pg_pool.commitTx();
+
+        return wrapper.success();
     }
 
 }

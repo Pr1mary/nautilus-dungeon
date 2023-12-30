@@ -6,6 +6,8 @@ import { Create } from "./utility/Create";
 import { Join } from "./utility/Join";
 import { Start } from "./utility/Start";
 import { Stop } from "./utility/Stop";
+import { Show } from "./utility/Show";
+import { Pause } from "./utility/Pause";
 
 export class CommandHandler {
 
@@ -14,7 +16,7 @@ export class CommandHandler {
 
     constructor() {
         const cmd_list: ICommand[] = [
-            new Server, new Create, new Join, new Start, new Stop,
+            new Server, new Create, new Join, new Start, new Stop, new Show, new Pause
         ];
         this.commands = new Collection<String, ICommand>();
         for (const command of cmd_list) {
